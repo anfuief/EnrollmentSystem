@@ -13,19 +13,39 @@ namespace Enrollment_System
 {
     public partial class SubjectEntry : Form
     {
-        string connectionString = @"Provider = Microsoft.ACE.OLEDB.12.0; Data Source = \\Server2\second semester 2023-2024\LAB802\79286_CC_APPSDEV22_1030_1230_PM_MW\79286-23215130\Desktop\FINALS\Alvarado.accdb";
+        string connectionString = @"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=\\Server2\second semester 2023-2024\LAB802\79286_CC_APPSDEV22_1030_1230_PM_MW\79286-23215130\Desktop\FINALS\Alvarado.accdb";
+
         public SubjectEntry()
         {
             InitializeComponent();
         }
 
-        private void groupBox2_Enter(object sender, EventArgs e)
-        {
-
-        }
-
         private void SaveButton_Click(object sender, EventArgs e)
         {
+            if (!Txt(SubjectCodeTextBox.Text))
+            {
+                MessageBox.Show("Subject Code Text Only");
+            }
+
+            if (!Txt(DescriptionTextBox.Text))
+            {
+                MessageBox.Show("Desciption Text Only");
+            }
+
+            if (!Num(UnitsTextBox.Text))
+            {
+                MessageBox.Show("Units Number Only");
+            }
+
+            if (!Num(CurriculumYearTextBox.Text))
+            {
+                MessageBox.Show("Curriculum Year Number Only ");
+            }
+
+            if (!Txt(RequisiteTextBox.Text))
+            {
+                MessageBox.Show("Requisite Code Text Onlyy");
+            }
             
             OleDbConnection thisConnection = new OleDbConnection(connectionString);
             string Ole = "Select * From SubjectFile";
@@ -46,6 +66,11 @@ namespace Enrollment_System
                            
             thisDataSet.Tables["SubjectFile"].Rows.Add(thisRow);
             thisAdapter.Update(thisDataSet, "SubjectFile");
+
+            if(PreRadioButton.Checked || CoRadioButton.Checked && RequisiteTextBox.Text != string.Empty)
+            {
+                Requisite();
+            }
 
             MessageBox.Show("Recorded");
         }
@@ -70,7 +95,7 @@ namespace Enrollment_System
 
                 while (thisDataReader.Read())
                 {
-                    if (thisDataReader["SFSSUBJCODE"].ToString().Trim().ToUpper() == RequisiteTextBox.Text.Trim().ToUpper())
+                    if (thisDataReader["SFSUBJCODE"].ToString().Trim().ToUpper() == RequisiteTextBox.Text.Trim().ToUpper())
                     {
                         found = true;
                         subjectcode = thisDataReader["SFSUBJCODE"].ToString();
@@ -88,16 +113,54 @@ namespace Enrollment_System
                     SubjectDataGridView.Rows[0].Cells[1].Value = description;
                     SubjectDataGridView.Rows[0].Cells[2].Value = units;
                 }
+
+                OleDbConnection reqConnection = new OleDbConnection(connectionString);
+                reqConnection.Open();
+                OleDbCommand reqCommand = thisConnection.CreateCommand();
+
+                string sqlreq = "Select * From SubjectPreqFile";
+                reqCommand.CommandText = sqlreq;
+
+                OleDbDataReader reqDataRead = reqCommand.ExecuteReader();
+                while (reqDataRead.Read())
+                {
+                    if (reqDataRead["SUBJCODE"].ToString().Trim().ToUpper() == RequisiteTextBox.Text.Trim().ToUpper())
+                    {
+                        SubjectDataGridView.Rows[0].Cells[3].Value = reqDataRead["SUBJPRECODE"].ToString().Trim().ToUpper();
+                        break;
+                    }
+                    else
+                        SubjectDataGridView.Rows[0].Cells[3].Value = string.Empty;
+                }
+
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        public void Requisite()
         {
+            OleDbConnection thisConnection = new OleDbConnection(connectionString);
+            string Ole = "Select * From SubjectPreqFile";
+            OleDbDataAdapter thisAdapter = new OleDbDataAdapter(Ole, thisConnection);
+            OleDbCommandBuilder thisBuilder = new OleDbCommandBuilder(thisAdapter);
+            DataSet thisDataSet = new DataSet();
 
-        }
+            thisAdapter.Fill(thisDataSet, "SubjectPreqFile");
 
-        private void groupBox1_Enter(object sender, EventArgs e)
-        {
+            DataRow thisRow = thisDataSet.Tables["SubjectPreqFile"].NewRow();
+            thisRow["SUBJCODE"] = SubjectCodeTextBox.Text;
+            thisRow["SUBJPRECODE"] = RequisiteTextBox.Text;
+
+            if (PreRadioButton.Checked)
+            {
+                thisRow["SUBJCATEGORY"] = "PR";
+            }
+            else
+            {
+                thisRow["SUBJCATEGORY"] = "CR";
+            }
+
+            thisDataSet.Tables["SubjectPreqFile"].Rows.Add(thisRow);
+            thisAdapter.Update(thisDataSet, "SubjectPreqFile");
 
         }
 
@@ -106,6 +169,16 @@ namespace Enrollment_System
             SubjectScheduleEntry form = new SubjectScheduleEntry();
             form.Show();
             this.Hide();
+        }
+
+        private bool Txt(string text)
+        {
+            return !string.IsNullOrEmpty(text) && text.All(char.IsLetter);
+        }
+
+        private bool Num(string text)
+        {
+            return !string.IsNullOrEmpty(text) && text.All(char.IsDigit);
         }
     }
 }

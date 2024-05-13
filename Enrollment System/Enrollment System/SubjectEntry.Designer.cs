@@ -85,7 +85,6 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Subject Information";
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
             // 
             // CourseCodeComboBox
             // 
@@ -234,7 +233,6 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Prerequisite Information";
-            this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
             // 
             // SubjectDataGridView
             // 
@@ -351,7 +349,6 @@
             this.Name = "SubjectEntry";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
